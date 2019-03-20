@@ -13,18 +13,32 @@ import org.testng.Assert;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.Alert;
+import org.openqa.selenium.NoAlertPresentException;
+import java.util.*;
+import java.util.List;
+import java.util.ListIterator;
 
 public class MyTest{
 	private final String URL = "https://vacations-management.herokuapp.com/users/sign_in";
 	private final String USERNAME = "gap-automation-test@mailinator.com";
 	private final String PASSWORD = "12345678";
-	private final String FIRST_NAME = "Hellen";
-	private final String LAST_NAME = "Suárez";	
-	private final String EMAIL = "hsuarez@growthaccelerationpartners.com";
+	private final String FIRST_NAME = "Growth";
+	private final String LAST_NAME = "Acceleration Partners";
+	private final String EMPLOYEE_NAME = "Hellen";	
+	private final String EMPLOYEE_EMAIL = "hsuarez@growthaccelerationpartners.com";
 	private final String ID = "106550907";
 	private final String LEADER_NAME = "Daniel";
+	private final String ADMIN_FIRST = "Admin";
+	private final String ADMIN_LAST = "User Hellen";
+	private final String ADMIN_EMAIL = "hsuarez@growthaccelerationpartners.com";
+	private final String ADMIN_PASS = "123Queso";
 	private WebDriver webDriver;
 	private WebDriverWait wait;
+	List<WebElement> users;
+	List<WebElement> tabs;
+	private WebElement foundEmployee;
+	private WebElement foundAdmin;
+
 
 	@BeforeTest
 	public void tearUp() {
@@ -35,9 +49,12 @@ public class MyTest{
 	@Test 
 	public void myTest() {
 		login(USERNAME,PASSWORD);
-		updateMyAcctInfo(FIRST_NAME,LAST_NAME,PASSWORD);
-		//createNewEmployee(FIRST_NAME,LAST_NAME,EMAIL,ID,LEADER_NAME);
-		verifyEmployeeBeforeDeleting(ID);
+		//navigateThroughTabs();
+		//updateMyAcctInfo(FIRST_NAME,LAST_NAME,PASSWORD);
+		//createNewEmployee(EMPLOYEE_NAME,LAST_NAME,EMPLOYEE_EMAIL,ID,LEADER_NAME);
+		//deleteEmployee(ID);
+		createAdminUser(ADMIN_FIRST, ADMIN_LAST, ADMIN_EMAIL, ADMIN_PASS);
+		destroyAdminAccount(ADMIN_EMAIL);
 	}
 
 	@AfterTest
@@ -49,6 +66,17 @@ public class MyTest{
 		find(By.id("user_email")).sendKeys(username);
 		find(By.id("user_password")).sendKeys(password);
 		find(By.name("commit")).click();
+	}
+
+	private void navigateThroughTabs(){
+		tabs = webDriver.findElements(By.cssSelector("ul[id=menu] li a"));
+
+		for( int i = 0; i < tabs.size(); i++)
+		{  
+		    tabs = webDriver.findElements(By.cssSelector("ul[id=menu] li a")); 
+		    tabs.get(i).click();
+		}
+
 	}
 
 	private WebElement find(By locator) {
@@ -64,7 +92,7 @@ public class MyTest{
 	 
 	}
 
-	/*private void createNewEmployee(String firstName, String lastName, String email, String identification, String leaderName){
+	private void createNewEmployee(String firstName, String lastName, String email, String identification, String leaderName){
 		find(By.linkText("Create a new employee")).click();
 		find(By.id("employee_first_name")).sendKeys(firstName);
 		find(By.id("employee_last_name")).sendKeys(lastName);
@@ -72,22 +100,80 @@ public class MyTest{
 		find(By.id("employee_identification")).sendKeys(String.valueOf(identification));
 		find(By.id("employee_leader_name")).sendKeys(leaderName);
 		find(By.name("commit")).click();
-	}*/
-
-	private void verifyEmployeeBeforeDeleting(String identification){
-		String identifier = find(By.cssSelector("table tr:nth-child(2) td:nth-child(3)")).getText();
-		Assert.assertEquals(identifier, identification);
-		find(By.cssSelector("table tr:nth-child(2) td:nth-child(9) a")).click();
-		wait = new WebDriverWait(webDriver, 5);
-		wait.until(ExpectedConditions.alertIsPresent());
-		Alert alert = webDriver.switchTo().alert();
-		alert.accept();
 	}
 
-	/*private void deleteEmployee(){
-		
+	private void deleteEmployee(String identification){
+		find(By.linkText("Employees Information")).click();
+		WebElement element = getEmployeeById(identification);
+		element.findElement(By.cssSelector("[data-method='delete']")).click();
+		isAlertPresent();
+	}
 
-	}*/
+	private void createAdminUser(String adminFirstName, String adminLastName, String adminEmail, String adminPass) {
+		find(By.linkText("Administrative Users")).click();
+		find(By.linkText("Create a new Admin user")).click();
+		find(By.id("user_first_name")).sendKeys(Keys.chord(Keys.CONTROL, "a"), adminFirstName);
+		find(By.id("user_last_name")).sendKeys(Keys.chord(Keys.CONTROL, "a"), adminLastName);
+		find(By.id("user_email")).sendKeys(Keys.chord(Keys.CONTROL, "a"), adminEmail);
+		find(By.id("user_password")).sendKeys(Keys.chord(Keys.CONTROL, "a"), adminPass);
+		find(By.id("user_password_confirmation")).sendKeys(Keys.chord(Keys.CONTROL, "a"), adminPass);
+		find(By.name("commit")).click();
+	}
+
+	private void destroyAdminAccount(String adminEmail){
+		find(By.linkText("Administrative Users")).click();
+		WebElement element = getAdminByEmail(adminEmail);
+		element.findElement(By.cssSelector("[data-method='delete']")).click();
+		System.out.println(element);
+		isAlertPresent();
+	}
+
+	public void getUsers() {
+    	users = webDriver.findElements(By.cssSelector("table tr"));
+	}
+
+	public WebElement getEmployeeById(String employeeId) {
+    getUsers();
+    users.forEach(employee -> {
+        if (employee.getText().contains(employeeId)) {
+            foundEmployee = employee;
+
+        	}
+    	});
+    	return foundEmployee;
+	}
+
+	public WebElement getAdminByEmail(String adminEmail) {
+    getUsers();
+    users.forEach(admin -> {
+        if (admin.getText().contains(adminEmail)) {
+            foundAdmin = admin;
+        	}
+    	});
+    	return foundAdmin;
+	}	
+
+	public boolean isAlertPresent() {
+	  boolean presentFlag = false;
+
+	  try {
+	  wait = new WebDriverWait(webDriver, 5);
+	  wait.until(ExpectedConditions.alertIsPresent());
+	   // Check the presence of alert
+	   Alert alert = webDriver.switchTo().alert();
+	   // Alert present; set the flag
+	   presentFlag = true;
+	   // if present consume the alert
+	   alert.accept();
+
+	  } catch (NoAlertPresentException ex) {
+	   // Alert not present
+	   ex.printStackTrace();
+	  }
+
+	  return presentFlag;
+ }
+
 
 
 }

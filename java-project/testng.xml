@@ -5,7 +5,8 @@
   <test name="Regression1">
     <classes>
       <class name="tests.MyTest"/>
-      <!---<class name="tests.HelloWorldHellen"/>-->
+      <!--<class name="tests.PersonTest"/>-->
+      <!--<class name="tests.HelloWorldHellen"/>-->
     </classes>
   </test>
 </suite>
