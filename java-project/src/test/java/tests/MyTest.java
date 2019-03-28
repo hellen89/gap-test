@@ -1,10 +1,17 @@
 package tests;
 
+import java.util.List;
+
+import org.openqa.selenium.Alert;
+import org.openqa.selenium.By;
+import org.openqa.selenium.NoAlertPresentException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.testng.annotations.BeforeTest;
+import org.openqa.selenium.chrome.ChromeDriver;
 import org.testng.annotations.AfterTest;
+import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
+
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.By;
 import java.util.concurrent.TimeUnit;
@@ -18,10 +25,17 @@ import java.util.*;
 import java.util.List;
 import java.util.ListIterator;
 
+
 public class MyTest{
+	
+// Octavio´s changes
 	private final String URL = "https://vacations-management.herokuapp.com/users/sign_in";
 	private final String USERNAME = "gap-automation-test@mailinator.com";
 	private final String PASSWORD = "12345678";
+    private final String IDENTIFICATION = "75105914";
+	List <WebElement> admins;
+	
+// Hellen´s changes
 	private final String FIRST_NAME = "Growth";
 	private final String LAST_NAME = "Acceleration Partners";
 	private final String EMPLOYEE_NAME = "Hellen";	
@@ -39,22 +53,32 @@ public class MyTest{
 	private WebElement foundEmployee;
 	private WebElement foundAdmin;
 
+	
+
+
 
 	@BeforeTest
 	public void tearUp() {
+		System.setProperty("webdriver.chrome.driver", "C:\\Users\\orgym\\Desktop\\proyectos selenium\\Chromedriver 2019\\chromedriver.exe");
 		webDriver = new ChromeDriver();
 		webDriver.get(URL);
 	}
 
 	@Test 
+
 	public void myTest() {
 		login(USERNAME,PASSWORD);
+		//tab_Navigation(USERNAME,PASSWORD);
+		//destroy_Account(USERNAME,PASSWORD);
+		//deleteEmployee(USERNAME,PASSWORD,IDENTIFICATION);
+		//deleteAdmin(USERNAME,PASSWORD,LAST_NAME);
 		//navigateThroughTabs();
 		//updateMyAcctInfo(FIRST_NAME,LAST_NAME,PASSWORD);
 		//createNewEmployee(EMPLOYEE_NAME,LAST_NAME,EMPLOYEE_EMAIL,ID,LEADER_NAME);
 		//deleteEmployee(ID);
 		createAdminUser(ADMIN_FIRST, ADMIN_LAST, ADMIN_EMAIL, ADMIN_PASS);
 		destroyAdminAccount(ADMIN_EMAIL);
+
 	}
 
 	@AfterTest
@@ -66,7 +90,123 @@ public class MyTest{
 		find(By.id("user_email")).sendKeys(username);
 		find(By.id("user_password")).sendKeys(password);
 		find(By.name("commit")).click();
+		
 	}
+	
+	
+	//Method to Destroy first account on the list
+	private void destroy_Account(String username, String password) throws InterruptedException {
+		find(By.id("user_email")).sendKeys(username);
+		find(By.id("user_password")).sendKeys(password);
+		find(By.name("commit")).click();
+		find(By.cssSelector("a[href='/users']")).click();
+		Thread.sleep(3000);
+		find(By.xpath(" //table/tbody/tr[2]/td[4]")).click();
+		Thread.sleep(5000);
+		Alert alert = webDriver.switchTo().alert();
+		isAlertPresent();
+				
+	
+	}
+	
+	//Method to Add Vacations
+		private void addVacations(String username, String password,String identification) throws InterruptedException{
+			find(By.id("user_email")).sendKeys(username);
+			find(By.id("user_password")).sendKeys(password);
+			find(By.name("commit")).click();
+			Thread.sleep(3000);
+			WebElement element = getEmployeeById(identification);
+			element.findElement(By.cssSelector("[data-method='Add/Request Vacation']")).click();
+			Thread.sleep(3000);
+			
+		}
+		
+   //Method to delete an Admin
+	private void deleteAdmin(String username, String password,String last_name) throws InterruptedException{
+			find(By.id("user_email")).sendKeys(username);
+			find(By.id("user_password")).sendKeys(password);
+			find(By.name("commit")).click();
+			Thread.sleep(3000);
+			find(By.cssSelector("a[href='/users']")).click();
+			WebElement element = getAdminByLastName(last_name);
+	        element.findElement(By.cssSelector("[data-method='delete']")).click();
+			Thread.sleep(3000);
+			isAlertPresent();
+			Thread.sleep(3000);
+				}		
+	
+	//Method to delete an employee
+	private void deleteEmployee(String username, String password,String identification) throws InterruptedException{
+		find(By.id("user_email")).sendKeys(username);
+		find(By.id("user_password")).sendKeys(password);
+		find(By.name("commit")).click();
+		//find(By.linkText("Employees Information")).click();
+		Thread.sleep(3000);
+		WebElement element = getEmployeeById(identification);
+		element.findElement(By.cssSelector("[data-method='delete']")).click();
+		Thread.sleep(3000);
+		isAlertPresent();
+		Thread.sleep(3000);
+	}
+	
+	public WebElement getAdminByLastName(String last_name) {
+		users = webDriver.findElements(By.cssSelector("table tr"));
+	    users.forEach(admin -> {
+	        if (admin.getText().contains(last_name)) {
+	            foundAdmin = admin;
+
+	        	}
+	    	});
+	    	return foundAdmin;
+		}
+	
+	public WebElement getEmployeeById(String employeeId) {
+		users = webDriver.findElements(By.cssSelector("table tr"));
+	    users.forEach(employee -> {
+	        if (employee.getText().contains(employeeId)) {
+	            foundEmployee = employee;
+
+	        	}
+	    	});
+	    	return foundEmployee;
+		}
+	
+	
+	//Method to Navigate between tabs
+	private void tab_Navigation(String username, String password) throws InterruptedException {
+		find(By.id("user_email")).sendKeys(username);
+		find(By.id("user_password")).sendKeys(password);
+		find(By.name("commit")).click();
+		find(By.cssSelector("a[href='/users']")).click();
+		Thread.sleep(3000);
+		find(By.cssSelector("a[href='/my_account']")).click();
+		Thread.sleep(3000);
+		find(By.cssSelector("a[href='/employees']")).click();
+		Thread.sleep(3000);
+	   
+		
+	}
+	
+	public boolean isAlertPresent() {
+		  boolean presentFlag = false;
+
+		  try {
+		   // Check the presence of alert
+		   Alert alert = webDriver.switchTo().alert();
+		   // Alert present; set the flag
+		   presentFlag = true;
+		   // if present consume the alert
+		   alert.accept();
+
+		  } catch (NoAlertPresentException ex) {
+		   // Alert not present
+		   ex.printStackTrace();
+		  }
+
+		  return presentFlag;
+	 }
+	
+	
 
 	private void navigateThroughTabs(){
 		tabs = webDriver.findElements(By.cssSelector("ul[id=menu] li a"));
@@ -83,6 +223,7 @@ public class MyTest{
 		return webDriver.findElement(locator);
 	}
 
+// Hellen´s Methods
 	private void updateMyAcctInfo(String firstName, String lastName, String currentPassword){
 	    find(By.linkText("My Account")).click();
 	    find(By.id("user_first_name")).sendKeys(Keys.chord(Keys.CONTROL, "a"), firstName);
@@ -132,7 +273,7 @@ public class MyTest{
     	users = webDriver.findElements(By.cssSelector("table tr"));
 	}
 
-	public WebElement getEmployeeById(String employeeId) {
+	/*public WebElement getEmployeeById(String employeeId) {
     getUsers();
     users.forEach(employee -> {
         if (employee.getText().contains(employeeId)) {
@@ -141,7 +282,7 @@ public class MyTest{
         	}
     	});
     	return foundEmployee;
-	}
+	} Repeted Method*/ 
 
 	public WebElement getAdminByEmail(String adminEmail) {
     getUsers();
@@ -153,7 +294,7 @@ public class MyTest{
     	return foundAdmin;
 	}	
 
-	public boolean isAlertPresent() {
+	/*public boolean isAlertPresent() {
 	  boolean presentFlag = false;
 
 	  try {
@@ -172,7 +313,8 @@ public class MyTest{
 	  }
 
 	  return presentFlag;
- }
+ }Repeted Method*/
+
 
 
 
