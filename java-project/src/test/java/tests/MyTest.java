@@ -42,9 +42,9 @@ public class MyTest{
 	private final String EMPLOYEE_EMAIL = "hsuarez@growthaccelerationpartners.com";
 	private final String ID = "106550907";
 	private final String LEADER_NAME = "Daniel";
-	private final String ADMIN_FIRST = "Admin";
-	private final String ADMIN_LAST = "User Hellen";
-	private final String ADMIN_EMAIL = "hsuarez@growthaccelerationpartners.com";
+	private final String ADMIN_FIRST = "Carlos";
+	private final String ADMIN_LAST = "Charry";
+	private final String ADMIN_EMAIL = "scharry@growthaccelerationpartners.com";
 	private final String ADMIN_PASS = "123Queso";
 	private WebDriver webDriver;
 	private WebDriverWait wait;
@@ -54,12 +54,8 @@ public class MyTest{
 	private WebElement foundAdmin;
 
 	
-
-
-
 	@BeforeTest
 	public void tearUp() {
-		System.setProperty("webdriver.chrome.driver", "C:\\Users\\orgym\\Desktop\\proyectos selenium\\Chromedriver 2019\\chromedriver.exe");
 		webDriver = new ChromeDriver();
 		webDriver.get(URL);
 	}
@@ -72,12 +68,13 @@ public class MyTest{
 		//destroy_Account(USERNAME,PASSWORD);
 		//deleteEmployee(USERNAME,PASSWORD,IDENTIFICATION);
 		//deleteAdmin(USERNAME,PASSWORD,LAST_NAME);
-		//navigateThroughTabs();
-		//updateMyAcctInfo(FIRST_NAME,LAST_NAME,PASSWORD);
-		//createNewEmployee(EMPLOYEE_NAME,LAST_NAME,EMPLOYEE_EMAIL,ID,LEADER_NAME);
-		//deleteEmployee(ID);
-		createAdminUser(ADMIN_FIRST, ADMIN_LAST, ADMIN_EMAIL, ADMIN_PASS);
+		navigateThroughTabs();
+		updateMyAcctInfo(FIRST_NAME,LAST_NAME,PASSWORD);
+		createNewEmployee(EMPLOYEE_NAME,LAST_NAME,EMPLOYEE_EMAIL,ID,LEADER_NAME);
+		deleteEmployee(ID);
+		createAdmin(ADMIN_FIRST, ADMIN_LAST, ADMIN_EMAIL, ADMIN_PASS);
 		destroyAdminAccount(ADMIN_EMAIL);
+		logout();
 
 	}
 
@@ -273,16 +270,30 @@ public class MyTest{
     	users = webDriver.findElements(By.cssSelector("table tr"));
 	}
 
-	/*public WebElement getEmployeeById(String employeeId) {
-    getUsers();
-    users.forEach(employee -> {
-        if (employee.getText().contains(employeeId)) {
-            foundEmployee = employee;
+// Sebastian's Methods
 
-        	}
-    	});
-    	return foundEmployee;
-	} Repeted Method*/ 
+	// CREATE ADMIN
+	private void createAdmin(String admin_first, String admin_last, String admin_email, String admin_pass) {
+		find(By.linkText("Administrative Users")).click();
+		find(By.linkText("Create a new Admin user")).click();
+		
+		find(By.id("user_first_name")).clear();
+		find(By.id("user_first_name")).sendKeys(admin_first);
+		find(By.id("user_last_name")).clear();
+		find(By.id("user_last_name")).sendKeys(admin_last);
+		find(By.id("user_email")).clear();
+		find(By.id("user_email")).sendKeys(admin_email);
+		find(By.id("user_password")).clear();
+		find(By.id("user_password")).sendKeys(admin_pass);
+		find(By.id("user_password_confirmation")).sendKeys(admin_pass);
+		find(By.name("commit")).click();
+	}
+
+	// LOGOUT
+	private void logout() {
+		find(By.linkText("Logout")).click();
+	}
+
 
 	public WebElement getAdminByEmail(String adminEmail) {
     getUsers();
@@ -293,29 +304,4 @@ public class MyTest{
     	});
     	return foundAdmin;
 	}	
-
-	/*public boolean isAlertPresent() {
-	  boolean presentFlag = false;
-
-	  try {
-	  wait = new WebDriverWait(webDriver, 5);
-	  wait.until(ExpectedConditions.alertIsPresent());
-	   // Check the presence of alert
-	   Alert alert = webDriver.switchTo().alert();
-	   // Alert present; set the flag
-	   presentFlag = true;
-	   // if present consume the alert
-	   alert.accept();
-
-	  } catch (NoAlertPresentException ex) {
-	   // Alert not present
-	   ex.printStackTrace();
-	  }
-
-	  return presentFlag;
- }Repeted Method*/
-
-
-
-
 }
